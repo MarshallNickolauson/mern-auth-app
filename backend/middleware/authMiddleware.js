@@ -4,13 +4,12 @@ import User from '../models/userModel.js';
 
 export const protect = asyncHandler(async (req, res, next) => {
     let token;
-
     token = req.cookies.jwt; // only works cuz of cookie parser in server.js
 
     if (token) {
         try {
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            req.user = await User.findById(decoded.id).select('-password');
+            req.user = await User.findById(decoded.userId).select('-password');
         } catch (error) {
             res.status(401);
             throw new Error('Not authorized - Invalid token');
