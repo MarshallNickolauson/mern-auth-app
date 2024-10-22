@@ -14,7 +14,10 @@ connectDB();
 const app = express();
 
 if (process.env.NODE_ENV === 'development') {
-    app.use(cors());
+    app.use(cors({
+        origin: 'http://localhost:3000',
+        credentials: true
+    }));
 }
 
 app.use(express.json());
