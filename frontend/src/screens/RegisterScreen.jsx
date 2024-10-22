@@ -1,9 +1,11 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { Form, Button, Row, Col } from 'react-bootstrap'
 import FormContainer from '../components/FormContainer'
-
-import React from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import Loader from '../components/Loader'
+import { useRegisterMutation } from '../features/auth/usersApiSlice'
+import { setCredentials } from '../features/auth/authSlice'
 
 const RegisterScreen = () => {
     const [name, setName] = useState('');
@@ -11,10 +13,31 @@ const RegisterScreen = () => {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
 
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+
+    const { userInfo } = useSelector((state) => state.auth);
+
+    const [register, { isLoading }] = useRegisterMutation();
+
+    useEffect(() => {
+        if (userInfo) navigate('/');
+    }, [navigate, userInfo]);
+
     const submitHandler = async (e) => {
         e.preventDefault();
-        console.log('submit');
-    }
+        if (password !== confirmPassword) {
+            console.log('Passwords do not match!');
+        } else {
+            try {
+                const res = await register({ name, email, password }).unwrap();
+                dispatch(setCredentials({ ...res }));
+                navigate('/');
+            } catch (err) {
+                console.log(err?.data?.message || err.error);
+            }
+        }
+    };
 
     return (
         <FormContainer>
@@ -56,6 +79,9 @@ const RegisterScreen = () => {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                     ></Form.Control>
                 </Form.Group>
+
+                {isLoading && <Loader />}
+
                 <Button type='submit' variant='primary' className='mt-3'>
                     Sign Up
                 </Button>
